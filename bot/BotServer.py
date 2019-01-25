@@ -60,15 +60,19 @@ class VkBot:
         server = response['server']
         ts = int(response['ts'])
         while True:
-            req = json.loads(requests.get(server, params=dict(act='a_check', key=key, ts=ts, wait=25)).text)
-            print(req)
-            if 'ts' in req:
-                if ts == int(req['ts']):
-                    continue
-                ts += 1
-            if 'updates' in req:
-                message = req['updates'][0]['object']
-                self.parse_message(message)
+            try:
+                req = json.loads(requests.get(server, params=dict(act='a_check', key=key, ts=ts, wait=25)).text)
+                print(req)
+                if 'ts' in req:
+                    if ts == int(req['ts']):
+                        continue
+                    ts += 1
+                if 'updates' in req:
+                    message = req['updates'][0]['object']
+                    self.parse_message(message)
+            except KeyboardInterrupt:
+                print('Stopping')
+                return
 
 
 vk_bot = VkBot('e0042caaa2fec97509415bab21c261b48d1447c7f57b15d18a0b04e226519e6d5221d064b32ac5ae1a02f')
