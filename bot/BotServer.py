@@ -24,10 +24,13 @@ class VkBot:
             print('Fuck')
 
     def parse_message(self, message):
-        if '@channel' in message['text']:
-            self.channel(message)
-        elif '@here' in message['text']:
-            self.here(message)
+        try:
+            if '@channel' in message['text']:
+                self.channel(message)
+            elif '@here' in message['text']:
+                self.here(message)
+        except vk_api.exceptions.ApiError:
+            print('No access')
 
     def get_long_poll(self):
         return self.vk_session.method('groups.getLongPollServer', {'group_id': 177225451})
