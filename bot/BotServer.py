@@ -29,6 +29,9 @@ class VkBot:
         elif '@here' in message['text']:
             self.here(message)
 
+    def get_long_poll(self):
+        return self.vk_session.method('groups.getLongPollServer', {'group_id': 177225451})
+
     def channel(self, message):
         if '[id457265466|@channel]' in message['text']:
             useful = ''.join(message['text'].split('[id457265466|@channel]'))
@@ -54,7 +57,7 @@ class VkBot:
         return
 
     def new_bot_processing(self):
-        response = self.vk_session.method('groups.getLongPollServer', {'group_id': 177225451})
+        response = self.get_long_poll()
         print(response)
         key = response['key']
         server = response['server']
@@ -70,6 +73,16 @@ class VkBot:
                 if 'updates' in req:
                     message = req['updates'][0]['object']
                     self.parse_message(message)
+                if 'failed' in req:
+                    code = int(req['failed'])
+                    if code == 1:
+                        ts = int(req['ts'])
+                    else:
+                        response = self.get_long_poll()
+                        print(response)
+                        key = response['key']
+                        server = response['server']
+                        ts = int(response['ts'])
             except KeyboardInterrupt:
                 print('Stopping')
                 return
