@@ -2,6 +2,7 @@ import vk_api
 import requests
 import json
 import random
+from datetime import datetime
 
 
 # token = '1fb38556c5dab475cfd727554e1d04f26462f3631c6c15e1dd97c2743def06de18d0dccdd9020b238911e'
@@ -13,6 +14,9 @@ class VkBot:
     def __init__(self, token):
         self.vk_session = vk_api.VkApi(token=token)
 
+    def log(self, to_print):
+        print(str(datetime.now()) + ': ' + str(to_print))
+
     def write_msg(self, peer_id, s):
         self.vk_session.method('messages.send', {'peer_id': peer_id, 'random_id': random.randint(0, 1 << 31), 'message': s})
 
@@ -21,7 +25,7 @@ class VkBot:
         try:
             return answer['profiles']
         except:
-            print('Fuck')
+            self.log('Fuck')
 
     def parse_message(self, message):
         try:
@@ -30,7 +34,7 @@ class VkBot:
             elif '@here' in message['text']:
                 self.here(message)
         except vk_api.exceptions.ApiError:
-            print('No access')
+            self.log('No access')
 
     def get_long_poll(self):
         return self.vk_session.method('groups.getLongPollServer', {'group_id': 177225451})
@@ -61,14 +65,14 @@ class VkBot:
 
     def new_bot_processing(self):
         response = self.get_long_poll()
-        print(response)
+        self.log(response)
         key = response['key']
         server = response['server']
         ts = int(response['ts'])
         while True:
             try:
                 req = json.loads(requests.get(server, params=dict(act='a_check', key=key, ts=ts, wait=25)).text)
-                print(req)
+                self.log(req)
                 if 'ts' in req:
                     if ts == int(req['ts']):
                         continue
@@ -82,7 +86,7 @@ class VkBot:
                         ts = int(req['ts'])
                     else:
                         response = self.get_long_poll()
-                        print(response)
+                        self.log(response)
                         key = response['key']
                         server = response['server']
                         ts = int(response['ts'])
