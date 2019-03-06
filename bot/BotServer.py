@@ -5,11 +5,6 @@ import random
 import logging
 
 
-# token = '1fb38556c5dab475cfd727554e1d04f26462f3631c6c15e1dd97c2743def06de18d0dccdd9020b238911e'
-
-#
-
-
 class VkBot:
     def __init__(self, token):
         self.vk_session = vk_api.VkApi(token=token)
@@ -40,13 +35,17 @@ class VkBot:
     def channel(self, message):
         if '[id457265466|@channel]' in message['text']:
             useful = ''.join(message['text'].split('[id457265466|@channel]'))
-        else:
+        elif '[id3696360|@channel]' in message['text']:
             useful = ''.join(message['text'].split('[id3696360|@channel]'))
+        else:
+            useful = ''.join(message['text'].split('@channel'))
         profiles = self.get_conversation_members(message['peer_id'])
         text = []
         for profile in profiles:
             text.append('@' + profile['screen_name'] + ' (_)')
-        self.write_msg(message['peer_id'], useful + '\n' + ''.join(text))
+        self.write_msg(message['peer_id'], useful + '\n' + ''.join(text[:50]))
+        for i in range(1, len(text) // 50 + 1):
+            self.write_msg(message['peer_id'], ''.join(text[i * 50:(i + 1) * 50]))
 
     def here(self, message):
         if '[id457265466|@here]' in message['text']:
@@ -91,7 +90,3 @@ class VkBot:
             except KeyboardInterrupt:
                 logging.info('Stopping')
                 return
-
-
-vk_bot = VkBot('e0042caaa2fec97509415bab21c261b48d1447c7f57b15d18a0b04e226519e6d5221d064b32ac5ae1a02f')
-vk_bot.new_bot_processing()
