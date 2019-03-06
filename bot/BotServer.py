@@ -2,7 +2,7 @@ import vk_api
 import requests
 import json
 import random
-from datetime import datetime
+import logging
 
 
 # token = '1fb38556c5dab475cfd727554e1d04f26462f3631c6c15e1dd97c2743def06de18d0dccdd9020b238911e'
@@ -13,9 +13,7 @@ from datetime import datetime
 class VkBot:
     def __init__(self, token):
         self.vk_session = vk_api.VkApi(token=token)
-
-    def log(self, to_print):
-        print(str(datetime.now()) + ': ' + str(to_print))
+        logging.basicConfig(filename='bot.log', level=logging.INFO)
 
     def write_msg(self, peer_id, s):
         self.vk_session.method('messages.send', {'peer_id': peer_id, 'random_id': random.randint(0, 1 << 31), 'message': s})
@@ -25,7 +23,7 @@ class VkBot:
         try:
             return answer['profiles']
         except:
-            self.log('Fuck')
+            logging.error('Fuck')
 
     def parse_message(self, message):
         try:
@@ -34,7 +32,7 @@ class VkBot:
             elif '@here' in message['text']:
                 self.here(message)
         except vk_api.exceptions.ApiError:
-            self.log('No access')
+            logging.error('No access')
 
     def get_long_poll(self):
         return self.vk_session.method('groups.getLongPollServer', {'group_id': 177225451})
@@ -65,14 +63,14 @@ class VkBot:
 
     def new_bot_processing(self):
         response = self.get_long_poll()
-        self.log(response)
+        logging.info(response)
         key = response['key']
         server = response['server']
         ts = int(response['ts'])
         while True:
             try:
                 req = json.loads(requests.get(server, params=dict(act='a_check', key=key, ts=ts, wait=25)).text)
-                self.log(req)
+                logging.info(req)
                 if 'ts' in req:
                     if ts == int(req['ts']):
                         continue
@@ -86,12 +84,12 @@ class VkBot:
                         ts = int(req['ts'])
                     else:
                         response = self.get_long_poll()
-                        self.log(response)
+                        logging.info(response)
                         key = response['key']
                         server = response['server']
                         ts = int(response['ts'])
             except KeyboardInterrupt:
-                print('Stopping')
+                logging.info('Stopping')
                 return
 
 
