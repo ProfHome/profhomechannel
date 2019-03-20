@@ -8,7 +8,6 @@ import logging
 class VkBot:
     def __init__(self, token):
         self.vk_session = vk_api.VkApi(token=token)
-        logging.basicConfig(filename='bot.log', level=logging.INFO)
 
     def write_msg(self, peer_id, s):
         self.vk_session.method('messages.send', {'peer_id': peer_id, 'random_id': random.randint(0, 1 << 31), 'message': s})
